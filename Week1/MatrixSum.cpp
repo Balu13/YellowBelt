@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #include <stdexcept>
 
@@ -10,7 +12,6 @@ class Matrix
 public:
 	Matrix();
 	Matrix(const int num_rows, const int num_cols);
-	~Matrix();
 
 	void Reset(const int num_rows, const int num_cols);
 	int At(const int rowNo, const int colNo) const;
@@ -26,12 +27,16 @@ public:
 private:
 	int rowNum;
 	int colNum;
+	vector<vector<int>> m;
+
+	void reset();
 };
 
 Matrix::Matrix()
 {
 	rowNum = 0;
 	colNum = 0;
+	reset();
 }
 
 Matrix::Matrix(const int num_rows, const int num_cols)
@@ -42,10 +47,7 @@ Matrix::Matrix(const int num_rows, const int num_cols)
 	}
 	rowNum = num_rows;
 	colNum = num_cols;
-}
-
-Matrix::~Matrix()
-{
+	reset();
 }
 
 void Matrix::Reset(const int num_rows, const int num_cols)
@@ -53,6 +55,20 @@ void Matrix::Reset(const int num_rows, const int num_cols)
 	if (num_rows < 0 || num_cols < 0)
 	{
 		throw std::out_of_range("negative row or column number");
+	}
+
+	rowNum = num_rows;
+	colNum = num_cols;
+	reset();
+}
+
+void Matrix::reset()
+{
+	m.clear();
+	m.resize(rowNum);
+	for each(auto row in m)
+	{
+		row.resize(colNum, 0);
 	}
 }
 
@@ -66,7 +82,8 @@ int Matrix::At(const int rowNo, const int colNo) const
 	{
 		throw std::out_of_range("column number is ivalid");
 	}
-	return 0;
+
+	return m[rowNo][colNo];
 }
 
 int& Matrix::At(const int rowNo, const int colNo)
@@ -82,27 +99,81 @@ int& Matrix::At(const int rowNo, const int colNo)
 
 	int a{ 0 };
 
-	return a;
+	vector<int> row = m[rowNo];
+	return row.at;
 }
 
-istream& operator >> (istream& input, Matrix& matrix)
+istream& operator >> (istream& input, Matrix& m)
 {
+	int rowNum, colNum;
+	input >> rowNum >> colNum;
+	m.Reset(rowNum, colNum);
+	for (int rowNo = 0; rowNo < m.GetNumRows(); ++rowNo)
+	{
+		for (int colNo = 0; colNo < m.GetNumColumns(); ++colNo)
+		{
+			int el;
+			input >> el;
+			m.At(rowNo, colNo) = el;
+		}
+	}
+
 	return input;
 }
 
-ostream& operator << (ostream& output, const Matrix& matrix)
+ostream& operator << (ostream& output, Matrix m)
 {
+	output << m.GetNumRows() << " " << m.GetNumColumns() << endl;
+	for (int rowNo = 0; rowNo < m.GetNumRows(); ++rowNo)
+	{
+		for (int colNo = 0; colNo < m.GetNumColumns(); ++colNo)
+		{
+			output << m.At(rowNo, colNo);
+		}
+	}
+
 	return output;
 }
 
 bool operator == (const Matrix& left, const Matrix& right)
 {
-	return true;
+	bool areEqual = left.GetNumRows() == right.GetNumRows()
+		&& left.GetNumColumns() == right.GetNumColumns();
+
+	for (int rowNo=0; rowNo < left.GetNumRows(); ++rowNo)
+	{
+		for (int colNo = 0; colNo < left.GetNumColumns(); ++colNo)
+		{
+			if (left.At(rowNo, colNo) != right.At(rowNo, colNo))
+			{
+				areEqual = false;
+				break;
+			}
+		}
+		if (!areEqual)
+		{
+			break;
+		}
+	}
+
+	return areEqual;
 }
 
 Matrix operator + (const Matrix& first, const Matrix& second)
 {
-	Matrix res;
+	if (first.GetNumColumns() != second.GetNumColumns() || first.GetNumRows() != second.GetNumRows())
+	{
+		throw invalid_argument("");
+	}
+
+	Matrix res{ first.GetNumRows(), first.GetNumColumns() };
+	for (int rowNo = 0; rowNo < first.GetNumRows(); ++rowNo)
+	{
+		for (int colNo = 0; colNo < first.GetNumColumns(); ++colNo)
+		{
+			res.At(rowNo, colNo) = first.At(rowNo, colNo) + second.At(rowNo, colNo);
+		}
+	}
 
 	return res;
 }

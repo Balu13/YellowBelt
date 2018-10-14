@@ -1,4 +1,4 @@
-//#include "stdafx.h"
+#include "stdafx.h"
 #include <iostream>
 #include <vector>
 
@@ -25,7 +25,7 @@ struct Block
 	}
 };
 
-int main()
+/*int main()
 {
 	int blockNum, density;
 	cin >> blockNum >> density;
@@ -50,4 +50,4 @@ int main()
 	cin.ignore(32768, '\n');
 	cin.get();
 	return 0;
-}
+}*/

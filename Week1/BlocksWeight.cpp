@@ -1,4 +1,4 @@
-//#include "stdafx.h"
+#include "stdafx.h"
 #include <iostream>
 #include <vector>
 
@@ -25,7 +25,7 @@ struct Block
 	}
 };
 
-int main()
+int mainBlockWeights()
 {
 	int blockNum, density;
 	cin >> blockNum >> density;

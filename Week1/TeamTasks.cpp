@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -19,14 +20,10 @@ using TasksInfo = map<TaskStatus, int>;
 
 class TeamTasks {
 public:
-	// Получить статистику по статусам задач конкретного разработчика
 	const TasksInfo& GetPersonTasksInfo(const string& person) const;
 
-	// Добавить новую задачу (в статусе NEW) для конкретного разработчитка
 	void AddNewTask(const string& person);
 
-	// Обновить статусы по данному количеству задач конкретного разработчика,
-	// подробности см. ниже
 	tuple<TasksInfo, TasksInfo> PerformPersonTasks(const string& person, int task_count);
 private:
 	map<string, TasksInfo> personTasks;
@@ -42,10 +39,14 @@ void TeamTasks::AddNewTask(const string& person)
 	++personTasks[person][TaskStatus::NEW];
 }
 
-TaskStatus operator++(const TaskStatus& status)
+TaskStatus operator+(const TaskStatus& status, const int offset)
 {
-	int tmp = static_cast<int>(status);
-	return static_cast<TaskStatus>(++tmp);
+	int tmp = static_cast<int>(status) + offset;
+	int max_value = static_cast<int>(TaskStatus::DONE);
+	int min_value = static_cast<int>(TaskStatus::NEW);
+	tmp = max(tmp, min_value);
+	tmp = min(tmp, max_value);
+	return static_cast<TaskStatus>(tmp);
 }
 
 tuple<TasksInfo, TasksInfo> TeamTasks::PerformPersonTasks(const string& person, int task_count)
@@ -56,46 +57,39 @@ tuple<TasksInfo, TasksInfo> TeamTasks::PerformPersonTasks(const string& person, 
 	if (personTasks.count(person) > 0)
 	{
 		TasksInfo& tasks = personTasks[person];
+        int refreshedNum = 0;
 		for (auto taskType : tasks)
 		{
-			int refreshedNum = refreshed.size();
-			if (refreshedNum == task_count)
+			if (refreshedNum == task_count || taskType.first == TaskStatus::DONE)
 			{
 				old.insert(make_pair(taskType.first, taskType.second));
-				if (taskType.first == TaskStatus::DONE)
-				{
-					break;
-				}
+				continue;
 			}
 
-			if (taskType.second < (task_count - refreshedNum))
+			if (taskType.second <= (task_count - refreshedNum))
 			{
-				refreshed.insert(make_pair(++taskType.first, taskType.second));
+				refreshed.insert(make_pair(taskType.first + 1, taskType.second));
+                refreshedNum += taskType.second;
 			}
 			else
 			{
-				refreshed.insert(make_pair(++taskType.first, task_count - refreshedNum));
+                refreshed.insert(make_pair(taskType.first + 1, task_count - refreshedNum));
 				old.insert(make_pair(taskType.first, taskType.second - (task_count - refreshedNum)));
-			}
+                refreshedNum += task_count - refreshedNum;
+            }
 		}
 		tasks.clear();
-		TaskStatus last;
-		for (auto taskType : refreshed)
+		TaskStatus status = TaskStatus::NEW;
+        TaskStatus lastStatus = TaskStatus::NEW;
+        do
 		{
-			tasks.insert(taskType);
-			last = taskType.first;
-		}
-		for (auto taskType : old)
-		{
-			if (taskType.first == last)
-			{
-				int& num = tasks[last];
-				num = +taskType.second;
-			}
-			else {
-				tasks.insert(taskType);
-			}
-		}
+			int num = (old.count(status) > 0 ? old[status] : 0) +
+						(refreshed.count(status) > 0 ? refreshed[status] : 0);
+    		tasks[status] = num;
+            lastStatus = status;
+			status = status + 1;
+		} while (status != lastStatus);
+        old.erase(TaskStatus::DONE);
 	}
 
 	return make_tuple(refreshed, old);
@@ -111,9 +105,17 @@ void PrintTasksInfo(TasksInfo tasks_info) {
 		", " << tasks_info[TaskStatus::DONE] << " tasks are done" << endl;
 }
 
+void pr(const TasksInfo& updated_tasks, const TasksInfo& untouched_tasks)
+{
+    cout << "Updated Ivan's tasks: ";
+    PrintTasksInfo(updated_tasks);
+    cout << "Untouched Ivan's tasks: ";
+    PrintTasksInfo(untouched_tasks);
+}
+
 int main() {
 	TeamTasks tasks;
-	tasks.AddNewTask("Ilia");
+	/*tasks.AddNewTask("Ilia");
 	for (int i = 0; i < 3; ++i) {
 		tasks.AddNewTask("Ivan");
 	}
@@ -137,6 +139,27 @@ int main() {
 	PrintTasksInfo(updated_tasks);
 	cout << "Untouched Ivan's tasks: ";
 	PrintTasksInfo(untouched_tasks);
+    */
+    TasksInfo updated_tasks, untouched_tasks;
 
-	return 0;
+    tasks.AddNewTask("a");
+    tie(updated_tasks, untouched_tasks) =
+        tasks.PerformPersonTasks("a", 1);
+    pr(updated_tasks, untouched_tasks);
+
+    tasks.AddNewTask("a");
+    tie(updated_tasks, untouched_tasks) =
+        tasks.PerformPersonTasks("a", 2);
+    pr(updated_tasks, untouched_tasks);
+
+    tasks.AddNewTask("a");
+    PrintTasksInfo(tasks.GetPersonTasksInfo("a"));
+
+    tie(updated_tasks, untouched_tasks) =
+        tasks.PerformPersonTasks("a", 3);
+    pr(updated_tasks, untouched_tasks);
+
+    PrintTasksInfo(tasks.GetPersonTasksInfo("a"));
+
+    return 0;
 }

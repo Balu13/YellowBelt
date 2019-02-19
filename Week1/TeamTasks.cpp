@@ -113,8 +113,8 @@ void pr(const TasksInfo& updated_tasks, const TasksInfo& untouched_tasks)
     PrintTasksInfo(untouched_tasks);
 }
 
-int main() {
-	TeamTasks tasks;
+/*int main() {
+	TeamTasks tasks;*/
 	/*tasks.AddNewTask("Ilia");
 	for (int i = 0; i < 3; ++i) {
 		tasks.AddNewTask("Ivan");
@@ -140,7 +140,7 @@ int main() {
 	cout << "Untouched Ivan's tasks: ";
 	PrintTasksInfo(untouched_tasks);
     */
-    TasksInfo updated_tasks, untouched_tasks;
+/*    TasksInfo updated_tasks, untouched_tasks;
 
     tasks.AddNewTask("a");
     tie(updated_tasks, untouched_tasks) =
@@ -163,3 +163,4 @@ int main() {
 
     return 0;
 }
+*/

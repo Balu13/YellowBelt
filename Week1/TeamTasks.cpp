@@ -4,7 +4,38 @@
 #include <vector>
 
 using namespace std;
+/*Input:
+AddNewTasks Alice 5
+PerformPersonTasks Alice 5
+PerformPersonTasks Alice 5
+PerformPersonTasks Alice 1
+AddNewTasks Alice 5
+PerformPersonTasks Alice 2
+GetPersonTasksInfo Alice
+PerformPersonTasks Alice 4
+GetPersonTasksInfo Alice
 
+Your output:
+[]
+[{"IN_PROGRESS": 5}, {"NEW": 0}]
+[{"IN_PROGRESS": 0, "TESTING": 4}, {"IN_PROGRESS": 1}]
+[{"TESTING": 0, "DONE": 0}, {"TESTING": 4}]
+[]
+[{"IN_PROGRESS": 2, "DONE": 0}, {"NEW": 3, "DONE": 0}]
+{"NEW": 3, "IN_PROGRESS": 2, "DONE": 0}
+[{"IN_PROGRESS": 3, "TESTING": 2, "TESTING": 0}, {}]
+{"IN_PROGRESS": 3, "TESTING": 2, "TESTING": 0}
+
+Correct output:
+[]
+[{"IN_PROGRESS": 5}, {}]
+[{"TESTING": 5}, {}]
+[{"DONE": 1}, {"TESTING": 4}]
+[]
+[{"IN_PROGRESS": 2}, {"NEW": 3, "TESTING": 4}]
+{"NEW": 3, "IN_PROGRESS": 2, "TESTING": 4, "DONE": 1}
+[{"IN_PROGRESS": 3, "TESTING": 1}, {"IN_PROGRESS": 1, "TESTING": 4}]
+{"IN_PROGRESS": 4, "TESTING": 5, "DONE": 1}*/
 // Перечислимый тип для статуса задачи
 enum class TaskStatus {
 	NEW,          // новая
@@ -56,9 +87,13 @@ tuple<TasksInfo, TasksInfo> TeamTasks::PerformPersonTasks(const string& person, 
 	if (personTasks.count(person) > 0)
 	{
 		TasksInfo& tasks = personTasks[person];
+		int refreshedNum{ 0 };
 		for (auto taskType : tasks)
 		{
-			int refreshedNum = refreshed.size();
+			if (taskType.second == 0)
+			{
+				continue;
+			}
 			if (refreshedNum == task_count)
 			{
 				old.insert(make_pair(taskType.first, taskType.second));
@@ -71,11 +106,16 @@ tuple<TasksInfo, TasksInfo> TeamTasks::PerformPersonTasks(const string& person, 
 			if (taskType.second < (task_count - refreshedNum))
 			{
 				refreshed.insert(make_pair(++taskType.first, taskType.second));
+				refreshedNum += taskType.second;
 			}
 			else
 			{
 				refreshed.insert(make_pair(++taskType.first, task_count - refreshedNum));
-				old.insert(make_pair(taskType.first, taskType.second - (task_count - refreshedNum)));
+				if (taskType.second == task_count - refreshedNum)
+				{
+					old.insert(make_pair(taskType.first, taskType.second - (task_count - refreshedNum)));
+				}
+				refreshedNum += taskType.second;
 			}
 		}
 		tasks.clear();
@@ -113,6 +153,10 @@ void PrintTasksInfo(TasksInfo tasks_info) {
 
 int main() {
 	TeamTasks tasks;
+	for (int i = 0; i < 5; ++i) {
+		tasks.AddNewTask("Alice");
+	}
+
 	tasks.AddNewTask("Ilia");
 	for (int i = 0; i < 3; ++i) {
 		tasks.AddNewTask("Ivan");

@@ -21,7 +21,7 @@ vector<T> Sqr(const vector<T>& x)
     vector<T> y;
     for (auto xVal : x)
     {
-        y.push_back(xVal * xVal);
+        y.push_back(Sqr(xVal));
     }
     return y;
 }
@@ -42,7 +42,7 @@ map<Key, Value> Sqr(const map<Key, Value>& x)
     }
     return y;
 }
-
+/*
 int main()
 {
     vector<int> v = { 1, 2, 3 };
@@ -65,4 +65,4 @@ int main()
     }
 
     return 0;
-}
+}*/

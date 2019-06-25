@@ -1,9 +1,10 @@
+#include "stdafx.h"
 #include <iostream>
 #include <map>
 #include <vector>
 
 using namespace std;
-
+/*
 class TeamTasks {
 public:
 	const TasksInfo& GetPersonTasksInfo(const string& person) const;
@@ -90,3 +91,4 @@ tuple<TasksInfo, TasksInfo> TeamTasks::PerformPersonTasks(const string& person, 
 
 	return make_tuple(refreshed, old);
 }
+*/
